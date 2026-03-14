@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw 業務全体マップ</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0c10;
+  --bg2: #13141a;
+  --bg3: #1a1b24;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.18);
+  --text: #e2e0ec;
+  --muted: #777;
+  --dim: #444;
+
+  --teal:   #1ec99a;
+  --teal-d: #0d5c47;
+  --teal-bg:#071f17;
+  --coral:  #f07f5a;
+  --coral-d:#7a3318;
+  --coral-bg:#2a1208;
+  --purple: #9b87f5;
+  --purple-d:#3c2e8a;
+  --purple-bg:#12103a;
+  --amber:  #f5c842;
+  --amber-d:#7a5e08;
+  --amber-bg:#221a02;
+  --blue:   #5aaeef;
+  --blue-d: #1a4d7a;
+  --blue-bg:#081828;
+  --pink:   #e878b8;
+  --pink-d: #722060;
+  --pink-bg:#250f20;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+}
+
+/* ── Header ── */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+.header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 20px;
+  margin-top: 18px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #999;
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.filter-btn {
+  padding: 5px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+}
+.filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+.filter-btn.active { color: #fff; border-color: transparent; }
+.filter-btn[data-cat="all"].active    { background: #333; }
+.filter-btn[data-cat="strategy"].active  { background: var(--purple-d); border-color: var(--purple); color: var(--purple); }
+.filter-btn[data-cat="content"].active   { background: var(--teal-d);   border-color: var(--teal);   color: var(--teal); }
+.filter-btn[data-cat="operation"].active { background: var(--coral-d);  border-color: var(--coral);  color: var(--coral); }
+.filter-btn[data-cat="analytics"].active { background: var(--blue-d);   border-color: var(--blue);   color: var(--blue); }
+.filter-btn[data-cat="client"].active    { background: var(--amber-d);  border-color: var(--amber);  color: var(--amber); }
+.filter-btn[data-cat="backoffice"].active{ background: var(--pink-d);   border-color: var(--pink);   color: var(--pink); }
+
+/* ── Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Section card ── */
+.section-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: opacity 0.25s;
+}
+.section-card.dimmed { opacity: 0.15; pointer-events: none; }
+
+.section-header {
+  padding: 14px 18px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-icon {
+  font-size: 18px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.section-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Task items ── */
+.task-list { padding: 10px 10px 12px; }
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.task:hover { background: rgba(255,255,255,0.04); }
+.task-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.task-body { flex: 1; min-width: 0; }
+.task-name {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.task-detail {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+.task-badge {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge-auto   { background: rgba(30,201,154,0.15); color: var(--teal); }
+.badge-semi   { background: rgba(245,200,66,0.12);  color: var(--amber); }
+.badge-manual { background: rgba(255,255,255,0.06); color: #666; }
+
+/* ── Drawer / Detail panel ── */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg3);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px 18px 0 0;
+  padding: 24px 24px 40px;
+  z-index: 101;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.drawer.open { transform: translateY(0); }
+.drawer-handle {
+  width: 36px; height: 4px;
+  background: #333;
+  border-radius: 99px;
+  margin: 0 auto 20px;
+}
+.drawer-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.drawer-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.drawer-desc {
+  font-size: 14px;
+  color: #aaa;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.drawer-section { margin-bottom: 18px; }
+.drawer-section h3 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.prompt-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.step-list { list-style: none; counter-reset: step; }
+.step-list li {
+  counter-increment: step;
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #bbb;
+  line-height: 1.5;
+}
+.step-list li::before {
+  content: counter(step);
+  min-width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #222;
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.automation-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.automation-bar-label { font-size: 12px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.bar-track {
+  flex: 1;
+  height: 6px;
+  background: #222;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.drawer-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: #222;
+  border: none;
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  cursor: pointer;
+  color: #777;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.drawer-close:hover { background: #333; color: #fff; }
+
+/* Count badge on header */
+.count-badge {
+  margin-left: auto;
+  font-size: 11px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  padding: 2px 9px;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (min-width: 900px) {
+  .drawer {
+    left: auto; right: 0;
+    top: 0; bottom: 0;
+    width: 460px;
+    border-radius: 0;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-top: none;
+    transform: translateX(100%);
+    max-height: 100vh;
+  }
+  .drawer.open { transform: translateX(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>OpenClaw 業務全体マップ</h1>
+  <p>SNSマーケター × 小規模事業者 — 全業務 × OpenClaw 自動化レベル</p>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>全自動化可能</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>半自動（確認あり）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--dim)"></div>補助・ドラフト生成</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-cat="all">すべて</button>
+  <button class="filter-btn" data-cat="strategy">戦略・企画</button>
+  <button class="filter-btn" data-cat="content">コンテンツ制作</button>
+  <button class="filter-btn" data-cat="operation">SNS運用</button>
+  <button class="filter-btn" data-cat="analytics">分析・レポート</button>
+  <button class="filter-btn" data-cat="client">クライアント管理</button>
+  <button class="filter-btn" data-cat="backoffice">バックオフィス</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <button class="drawer-close" id="drawerClose">✕</button>
+  <div id="drawerContent"></div>
+</div>
+
+<script>
+const CATS = {
+  strategy:   { label: '戦略・企画',     color: 'var(--purple)', bg: 'var(--purple-bg)', dark: 'var(--purple-d)', icon: '🧭' },
+  content:    { label: 'コンテンツ制作', color: 'var(--teal)',   bg: 'var(--teal-bg)',   dark: 'var(--teal-d)',   icon: '✏️' },
+  operation:  { label: 'SNS運用',        color: 'var(--coral)',  bg: 'var(--coral-bg)',  dark: 'var(--coral-d)',  icon: '📱' },
+  analytics:  { label: '分析・レポート', color: 'var(--blue)',   bg: 'var(--blue-bg)',   dark: 'var(--blue-d)',   icon: '📊' },
+  client:     { label: 'クライアント管理',color: 'var(--amber)', bg: 'var(--amber-bg)',  dark: 'var(--amber-d)',  icon: '🤝' },
+  backoffice: { label: 'バックオフィス', color: 'var(--pink)',   bg: 'var(--pink-bg)',   dark: 'var(--pink-d)',   icon: '🗂️' },
+};
+
+// auto=全自動  semi=半自動（確認あり）  assist=補助
+const DATA = [
+  {
+    cat: 'strategy',
+    section: '市場・競合リサーチ',
+    tasks: [
+      { name: '競合SNSアカウント定点観測', detail: '競合5〜10アカウントのフォロワー数・投稿頻度・エンゲージ率を毎週自動収集', level: 'auto',
+        desc: '指定した競合アカウントリストを定期巡回し、数値変化をスプレッドシートに記録。差分アラートをDiscordに通知する。',
+        prompt: '競合アカウント[@A, @B, @C]の今週の投稿数・エンゲージメント率・フォロワー数変化をまとめてレポートして',
+        steps: ['memory/competitors.mdに競合リスト登録','毎週月曜9時にスケジュール実行','~/reports/competitive/に結果保存','Discordに差分ハイライトを送信'],
+        auto: 90, human: 10 },
+      { name: 'トレンドキーワード収集', detail: 'X/TikTok/Instagramの急上昇タグ・ワードを毎朝抽出してリスト化', level: 'auto',
+        desc: '各プラットフォームの急上昇キーワードをスクレイピング・API経由で取得し、自分の担当業界と照合してスコアリング。',
+        prompt: '今日のSNSトレンドキーワードから[美容/食品/etc]業界に関連するものをピックアップして企画に使えそうなものに星をつけて',
+        steps: ['毎朝7時に自動実行','業界タグはmemory/industries.mdで定義','~/drafts/trends/YYYY-MM-DD.mdに保存'],
+        auto: 85, human: 15 },
+      { name: 'バズコンテンツ分析', detail: '直近1週間で万単位いいねを獲得した投稿のパターンを抽出・分類', level: 'semi',
+        desc: 'バズ投稿をフォーマット・テキスト構造・投稿時間・フック文で分類し「なぜ伸びたか」の仮説を自動生成。',
+        prompt: 'この1週間で[対象ジャンル]でバズった投稿10件を分析して、共通パターンと使えるフック文をまとめて',
+        steps: ['週次でバズ投稿を収集','フォーマット別に自動分類','フック文パターン集を更新','~/memory/hook-patterns.mdに蓄積'],
+        auto: 70, human: 30 },
+      { name: 'ペルソナ・ターゲット定義更新', detail: 'クライアントごとのターゲット定義をAI補助で定期見直し', level: 'semi',
+        desc: 'アカウントのエンゲージ傾向とフォロワー属性データをもとに、ペルソナ定義の更新提案を生成。承認後にmemoryへ反映。',
+        prompt: '[@account]の直近3ヶ月のエンゲージメントデータをもとにターゲットペルソナの更新案を出して',
+        steps: ['四半期ごとにスケジュール','インサイトデータを入力','ペルソナ更新案を生成','承認後にmemory/clients/に保存'],
+        auto: 50, human: 50 },
+      { name: 'SNS戦略・KPI設計', detail: '新規クライアントのアカウント目標・KPI・施策ロードマップの初稿を自動生成', level: 'semi',
+        desc: 'ブリーフ情報（業種・目標・現状数値）を入力するとKPI設計書とロードマップ初稿をWord形式で出力。',
+        prompt: '[クライアント名]のSNS戦略書を作って。業種:[X]、目標:[Y]、現フォロワー:[Z]、予算:[W]',
+        steps: ['ブリーフをチャットで入力','戦略書初稿を自動生成','~/clients/[name]/strategy.docxに保存'],
+        auto: 55, human: 45 },
+    ]
+  },
+  {
+    cat: 'content',
+    section: 'コンテンツ企画',
+    tasks: [
+      { name: 'ネタ出し・アイデア生成（毎朝）', detail: 'トレンド情報＋クライアントの業種・トーンをもとに投稿アイデアを毎朝5本生成', level: 'auto',
+        desc: '毎朝8時にトレンド収集→クライアントごとのmemoryを参照→媒体別アイデア5本＋タイトル案をDiscordに投稿。選ぶだけ。',
+        prompt: '[クライアント名]のInstagram用コンテンツアイデアを今日のトレンドを踏まえて5本出して。トーン:親しみやすい、業種:飲食',
+        steps: ['memory/clients/[name].mdからブランド情報参照','今日のトレンドリストと照合','アイデア×5生成','8:00にDiscord #ideas チャンネルへ投稿'],
+        auto: 90, human: 10 },
+      { name: '投稿テキスト・キャプション執筆', detail: 'アイデア承認後、本文・ハッシュタグ・絵文字まで含めた投稿テキストを媒体別に出力', level: 'semi',
+        desc: 'Instagram/X/TikTok/Facebook各媒体のフォーマット・文字制限・ハッシュタグ文化に対応した本文を生成。',
+        prompt: 'この企画[〇〇]でInstagram用キャプション（1200字以内、ハッシュタグ15個、絵文字あり）とX用要約版（140字以内）を作って',
+        steps: ['企画をチャットで指定','媒体別にフォーマット自動調整','~/drafts/[client]/posts/に保存','Slack経由で確認依頼'],
+        auto: 75, human: 25 },
+      { name: 'リール・TikTok台本作成', detail: '30〜90秒の縦型動画の構成・ナレーション台本・テロップ案を自動生成', level: 'semi',
+        desc: '企画テーマと尺を指定すると、フック→本編→CTA の3部構成で台本を出力。秒数指定にも対応。',
+        prompt: '[テーマ]について60秒のTikTok台本を作って。冒頭3秒のフックは強く、中盤に3つのTipsを入れて、最後にフォロー誘導',
+        steps: ['企画テーマと尺を入力','フック・本編・CTAの構成で生成','テロップ案も別列で出力','~/drafts/[client]/scripts/に保存'],
+        auto: 70, human: 30 },
+      { name: 'コンテンツカレンダー作成', detail: '月次投稿スケジュール・テーマ割り振り・締切管理の初稿を自動生成', level: 'semi',
+        desc: 'クライアントの月次投稿本数・記念日・キャンペーン予定を入力すると、Excel形式のコンテンツカレンダーを出力。',
+        prompt: '[クライアント]の来月のコンテンツカレンダーを作って。週4投稿、2日は商品紹介、1日はお役立ち、1日はUGC活用',
+        steps: ['クライアント情報・投稿頻度を指定','月間カレンダー初稿を生成','祝日・キャンペーンを自動挿入','~/clients/[name]/calendar/に保存'],
+        auto: 65, human: 35 },
+      { name: 'ハッシュタグリサーチ・選定', detail: '投稿テーマに最適なハッシュタグセット（ビッグ・ミドル・スモール）を媒体別に選定', level: 'auto',
+        desc: '投稿テーマから関連タグをリサーチし、投稿数規模・競合度・リーチ見込みで分類した最適セットを提案。',
+        prompt: '[テーマ]のInstagram投稿用ハッシュタグを、大（100万+）5個・中（10〜100万）7個・小（1〜10万）8個の計20個で出して',
+        steps: ['テーマをチャットで入力','タグの規模別分類','キャプションへのそのまま貼付け用で出力'],
+        auto: 88, human: 12 },
+      { name: '画像・バナーのAI生成プロンプト作成', detail: 'MidjourneyやDALL-E用の画像生成プロンプトをブランドガイドに沿って自動生成', level: 'auto',
+        desc: 'クライアントのブランドカラー・世界観・NGワードをmemoryから参照し、高品質な画像生成プロンプトを出力。',
+        prompt: '[クライアント]のInstagram用サムネイル画像のMidjourneyプロンプトを作って。商品:[X]、雰囲気:[Y]、カラー:[Z]',
+        steps: ['memory/clients/[name].mdのビジュアルガイド参照','プロンプト生成（英語）','NG要素も自動除外'],
+        auto: 85, human: 15 },
+    ]
+  },
+  {
+    cat: 'operation',
+    section: 'SNS日常運用',
+    tasks: [
+      { name: 'コメント・DM一次対応', detail: '受信コメント・DMをカテゴリ分類し、定型対応可能なものは返信ドラフトを自動生成', level: 'semi',
+        desc: '「問い合わせ」「クレーム」「褒め」「スパム」に自動分類。クレーム・問い合わせは即アラート、定型は返信案を生成。',
+        prompt: '今日届いたDMを分類して、問い合わせには返信ドラフトを作って、スパムはフラグを立てて',
+        steps: ['受信DM・コメントをリスト取得','カテゴリ分類','返信ドラフト生成（定型）','クレームはSlackで即アラート'],
+        auto: 65, human: 35 },
+      { name: 'エンゲージメント作業（いいね・フォロー）', detail: 'ターゲットアカウントへのエンゲージメント指示を自動生成。実行は手動または外注判断', level: 'assist',
+        desc: '週次でエンゲージメント対象アカウントリストを生成し、実施優先度を付けて渡す。実行は別途判断。',
+        prompt: '今週エンゲージすべき[業界]の注目アカウント20件をリストアップして、エンゲージ理由と優先度も付けて',
+        steps: ['業界・ターゲットをmemoryから参照','週次でリスト生成','優先度スコアを自動付与'],
+        auto: 40, human: 60 },
+      { name: '投稿スケジューリング確認', detail: '予約投稿の内容・時刻・媒体を毎朝チェックし、抜け漏れをアラート', level: 'auto',
+        desc: 'コンテンツカレンダーと実際の予約投稿ツール（Buffer/Later等）のズレを毎朝検出。当日分の最終チェックリストを送信。',
+        prompt: '今日の投稿スケジュールを確認して、抜けているものや時刻がズレているものがあれば教えて',
+        steps: ['カレンダーデータと投稿ツールAPIを照合','差異を検出','毎朝8:30にDiscordへチェックリスト送信'],
+        auto: 82, human: 18 },
+      { name: 'ストーリーズ・リプライ用素材テキスト', detail: 'ストーリーズの投票・質問ボックス・カウントダウン用テキストを企画別に生成', level: 'semi',
+        desc: 'その日の投稿テーマに合わせたストーリーズパーツテキスト（質問・投票・クイズ）をセットで生成。',
+        prompt: '[テーマ]のInstagramストーリーズ用に、投票スタンプ×2案・質問ボックス×1案・クイズ×1案を作って',
+        steps: ['当日投稿テーマを参照','ストーリーズパーツを生成','カレンダーに連動して前日夕方に出力'],
+        auto: 78, human: 22 },
+      { name: '炎上・リスクモニタリング', detail: 'ブランド名・担当クライアント名のネガティブ言及を常時監視しアラート送信', level: 'auto',
+        desc: 'ネガティブキーワードリストと照合しながら言及を監視。スコアが閾値を超えたら即時Discordアラート。',
+        prompt: '[クライアント名]に関するネガティブな言及を今日チェックして、炎上リスクがあるものを抽出して',
+        steps: ['memory/clients/[name].mdの監視ワードリスト参照','Web・SNS全体を定期巡回','閾値超えで即時アラート'],
+        auto: 88, human: 12 },
+      { name: 'インフルエンサー候補リストアップ', detail: 'コラボ候補インフルエンサーを条件指定で自動収集・スコアリング', level: 'semi',
+        desc: 'フォロワー数・エンゲージ率・業界・過去コラボ有無でスクリーニングし、アプローチ優先度付きリストを出力。',
+        prompt: '[業界]で[フォロワー数1〜10万]のマイクロインフルエンサーを候補20件リストアップして。エンゲージ率・投稿トーンも含めて',
+        steps: ['条件をチャットで指定','候補リストを収集','スコアリング','~/clients/[name]/influencers.xlsxに保存'],
+        auto: 60, human: 40 },
+    ]
+  },
+  {
+    cat: 'analytics',
+    section: 'データ分析・レポーティング',
+    tasks: [
+      { name: '週次パフォーマンスレポート', detail: '各SNSのKPI（リーチ・エンゲージ・フォロワー増減）を毎週自動集計・グラフ化', level: 'auto',
+        desc: '各媒体のインサイトデータを収集し、前週比・前月比の数値グラフ付きレポートをWord/PDF形式で自動生成。',
+        prompt: '[クライアント]の今週SNSレポートを作って。先週比・先月比を含め、良かった点と改善点もコメントして',
+        steps: ['各媒体APIからデータ取得','前週・前月比較を自動計算','グラフ付きWord/PDF生成','毎週月曜に~/reports/weekly/へ保存'],
+        auto: 88, human: 12 },
+      { name: '月次レポート・クライアント報告書', detail: '月間KPIサマリー・考察・翌月施策提案を含む報告書を自動生成', level: 'semi',
+        desc: '月次数値＋定性コメント＋翌月の改善提案まで含んだクライアント向けレポートを生成。社名・ロゴ・担当者名も自動挿入。',
+        prompt: '[クライアント]の[月]分の月次レポートを作って。KPIまとめ・考察・翌月の3施策提案を含めて',
+        steps: ['週次データを月間に集計','考察・提案を自動生成','クライアントのブランドカラーでWord整形','~/reports/monthly/に保存'],
+        auto: 72, human: 28 },
+      { name: 'コンテンツ別パフォーマンス分析', detail: '投稿ごとの数値を集計し、「伸びたコンテンツ」「伸びなかったコンテンツ」の傾向を抽出', level: 'auto',
+        desc: '全投稿のインプレッション・エンゲージ・保存数などをマトリクスで集計し、フォーマット・テーマ・時間帯別に傾向分析。',
+        prompt: '先月の投稿のうちエンゲージ率が高い上位10件と低い下位10件を比較して、差を生んでいる要因を分析して',
+        steps: ['全投稿データを取得','エンゲージ率でソート','上位・下位比較表を生成','次月の改善提案に連携'],
+        auto: 85, human: 15 },
+      { name: '広告レポート（Meta/TikTok Ads）', detail: '広告キャンペーンのCPM・CPC・ROAS等を自動集計しレポート化', level: 'semi',
+        desc: 'Meta Ads/TikTok Ads APIからデータを取得し、広告費・CPM・CPA・ROASのサマリー表とグラフを生成。',
+        prompt: '[クライアント]の今月のMeta広告レポートを作って。CPM・CPC・CPA・ROASと先月比を表とグラフで',
+        steps: ['広告API連携','KPI自動計算','比較グラフ付きPDF生成','~/reports/ads/に保存'],
+        auto: 78, human: 22 },
+      { name: 'ソーシャルリスニングレポート', detail: 'ブランド名・商品名のSNS上の言及・評判を定期収集し可視化', level: 'semi',
+        desc: 'Twitterの言及・ハッシュタグ・レビューを収集し、ポジティブ/ネガティブ/ニュートラル分類とトピック抽出を自動化。',
+        prompt: '[ブランド名]に関する今月のSNS上の評判をまとめて。ポジネガ比・主なトピック・改善に使えるフィードバックを抽出して',
+        steps: ['言及データを収集','感情分析・分類','トピッククラスタリング','~/reports/listening/に保存'],
+        auto: 68, human: 32 },
+      { name: 'KPIダッシュボード更新', detail: '自社・クライアント全案件のKPIを一元管理するシートを毎週自動更新', level: 'auto',
+        desc: '全クライアントの主要KPIをスプレッドシートに自動転記。前月比・目標達成率・アラートフラグを自動付与。',
+        prompt: '全クライアントのKPIダッシュボードを更新して。目標未達のものは赤フラグを立てて',
+        steps: ['全案件レポートデータを集約','スプレッドシートに転記','達成率・アラートを自動計算','毎週月曜に更新完了通知'],
+        auto: 90, human: 10 },
+    ]
+  },
+  {
+    cat: 'client',
+    section: 'クライアント管理・営業',
+    tasks: [
+      { name: '提案書・企画書ドラフト', detail: '新規クライアント向けの提案書初稿をブリーフから30分以内に生成', level: 'semi',
+        desc: 'ヒアリング内容を入力すると、現状課題→施策提案→KPI→料金→スケジュール構成の提案書Word初稿を生成。',
+        prompt: '[会社名]への提案書を作って。課題:[X]、提案内容:[Y]、期間:3ヶ月、想定費用:[Z]万円',
+        steps: ['ブリーフをチャットで入力','提案書構成を自動展開','Word形式で出力','~/clients/proposals/に保存'],
+        auto: 65, human: 35 },
+      { name: 'ミーティング議事録', detail: '音声メモや箇条書きメモから清書された議事録と次回アクションリストを自動生成', level: 'semi',
+        desc: 'ミーティング後に走り書きメモを貼り付けるだけで、議事録・決定事項・ToDoリスト（担当者・期限付き）に整理。',
+        prompt: 'このメモから議事録を作って。決定事項・宿題・次回日程を分けて整理して：[メモ貼り付け]',
+        steps: ['メモをチャットに貼り付け','議事録・決定事項・ToDoに分類','メール送信用フォーマットで出力','~/clients/[name]/meetings/に保存'],
+        auto: 78, human: 22 },
+      { name: 'クライアントへの報告メール', detail: '週次・月次レポートをメールに整形し、送信ドラフトを自動生成', level: 'semi',
+        desc: 'レポートの要点を引用してクライアントへの報告メールの件名・本文・添付案内を自動生成。送信前に確認するだけ。',
+        prompt: 'このレポートをもとに[クライアント名]への報告メールを作って。件名も含めて、丁寧だが簡潔なトーンで',
+        steps: ['月次レポートを参照','メール本文・件名を生成','~/drafts/emails/に保存','承認後にメールアプリで送信'],
+        auto: 72, human: 28 },
+      { name: '契約書・NDAのチェック補助', detail: '契約書・NDAnの要点整理と不明瞭条項の指摘リストを自動生成（確認補助）', level: 'assist',
+        desc: 'PDFを読み込み、主要条項のサマリー・懸念点・相手方有利な条文を指摘リストで出力。最終判断は自分で行う。',
+        prompt: 'この契約書のポイントを要約して。特に注意すべき条項と、確認が必要な箇所を教えて',
+        steps: ['契約書PDFをアップロード','条項を自動分類・要約','懸念点リストを生成','専門家確認が必要な箇所を明示'],
+        auto: 45, human: 55 },
+      { name: '案件・タスク進捗管理', detail: '複数クライアントの案件進捗・締切をまとめて管理。遅延アラートを自動送信', level: 'auto',
+        desc: '~/clients/各フォルダのtasks.mdを読み込み、期限が迫っているタスクを優先度順にリストアップしてDiscordに通知。',
+        prompt: '今週締め切りのタスクを全クライアント分まとめてリストアップして。遅延しているものを先に出して',
+        steps: ['全案件タスクファイルを読み込み','期限・優先度でソート','毎朝8時にDiscordへ通知','遅延タスクは即アラート'],
+        auto: 85, human: 15 },
+      { name: '営業メール・DM文章作成', detail: '新規開拓・ご挨拶・提案連絡などのアウトリーチ文を目的別に作成', level: 'semi',
+        desc: '送り先の業種・規模・接触経緯を入力すると、パーソナライズされた営業メール初稿を生成。スパムっぽくならないよう制御。',
+        prompt: '[会社名・業種]への初回アプローチメールを作って。SNS運用支援の提案、押しつけがましくない丁寧なトーンで',
+        steps: ['送り先情報をチャットで入力','業種・規模に合わせたメール生成','件名3案・本文を出力','~/drafts/emails/outreach/に保存'],
+        auto: 68, human: 32 },
+    ]
+  },
+  {
+    cat: 'backoffice',
+    section: '経理・財務',
+    tasks: [
+      { name: '請求書・見積書の作成', detail: '案件名・金額・クライアント情報を入力するとPDF請求書を自動生成', level: 'auto',
+        desc: '社名・案件名・金額・支払期限を入力するだけでフォーマット済みPDF請求書を出力。消費税・振込先も自動挿入。',
+        prompt: '[クライアント名]宛に[月]分の請求書を作って。内容:[SNS運用代行]、金額:[X]万円、支払期限:末日払い',
+        steps: ['案件情報をチャットで入力','消費税・合計を自動計算','PDF形式で出力','~/finances/invoices/[YYYY-MM]/に保存'],
+        auto: 88, human: 12 },
+      { name: '経費精算・仕訳補助', detail: '経費レシート画像から金額・用途・勘定科目を抽出し仕訳候補を生成', level: 'semi',
+        desc: 'レシート画像を送ると、金額・日付・店名・勘定科目候補を自動抽出。弥生/freee形式のCSVに出力可能。',
+        prompt: 'このレシートを経費として処理して。勘定科目の候補も出して',
+        steps: ['レシート画像をアップロード','OCRで情報抽出','勘定科目を自動推定','月次でCSVにまとめて会計ソフトに連携'],
+        auto: 72, human: 28 },
+      { name: '売上・入金管理', detail: 'クライアント別の売上・入金状況を集計し未入金アラートを自動送信', level: 'auto',
+        desc: '~/finances/invoices/の請求書ファイルを読み込み、入金予定日・入金済・未入金を管理。期日超過でアラート。',
+        prompt: '今月の入金状況をまとめて。未入金の請求書があれば金額・クライアント・期日を教えて',
+        steps: ['請求書フォルダを自動読み込み','入金ステータスを管理','期日超過で即Discordアラート','月次収支サマリーを生成'],
+        auto: 85, human: 15 },
+    ]
+  },
+  {
+    cat: 'backoffice',
+    section: 'スケジュール・タスク管理',
+    tasks: [
+      { name: 'デイリーブリーフィング（毎朝自動送信）', detail: '毎朝8時にその日のスケジュール・締切・優先タスクをDiscordに自動送信', level: 'auto',
+        desc: 'カレンダー・メール・タスクファイルを横断し「今日やること」「今日の締切」「確認が必要なもの」をまとめて送信。',
+        prompt: '今日のブリーフィングを作って。ミーティング・締切・未返信メール・優先タスクを教えて',
+        steps: ['カレンダーAPI・タスクファイルを読み込み','優先度付きブリーフィングを生成','毎朝8:00にDiscordへ送信'],
+        auto: 92, human: 8 },
+      { name: '週次タスクレビュー', detail: '毎週金曜に完了・未完了タスクをレビューし翌週の計画初稿を生成', level: 'auto',
+        desc: '週末に全タスクの完了率をレポートし、未完了の繰り越しリストと翌週の優先タスクを自動整理。',
+        prompt: '今週のタスク消化状況をレビューして。未完了のものを来週に持ち越す優先度付きリストにまとめて',
+        steps: ['全タスクファイルを読み込み','完了・未完了を集計','翌週計画初稿を生成','毎週金曜17時に送信'],
+        auto: 88, human: 12 },
+      { name: 'ミーティング日程調整メール', detail: '候補日・場所・アジェンダを含む日程調整メールのドラフトを自動生成', level: 'semi',
+        desc: 'カレンダーの空き時間を参照し、候補日3〜5案とアジェンダを含んだ日程調整メール文を生成。',
+        prompt: '[相手名]とのミーティング調整メールを作って。来週中に30分、オンラインで、アジェンダは[X]',
+        steps: ['カレンダーAPIで空き時間を取得','候補日3案を抽出','メール本文を生成','承認後に送信'],
+        auto: 72, human: 28 },
+      { name: 'リマインダー・期限管理', detail: '登録した期限・イベントを自動検知し、前日・当日にDiscordへリマインド', level: 'auto',
+        desc: 'タスクファイル・カレンダーの期限を常時監視。3日前・前日・当日にそれぞれ異なる粒度でリマインドを送信。',
+        prompt: '今週の期限一覧を出して。3日以内に迫っているものは太字で強調して',
+        steps: ['全タスク・カレンダーを監視','3日前・前日・当日に自動アラート','Discordの#remindersチャンネルへ送信'],
+        auto: 95, human: 5 },
+    ]
+  },
+  {
+    cat: 'backoffice',
+    section: 'コミュニケーション・情報管理',
+    tasks: [
+      { name: 'メール仕分け・返信ドラフト', detail: '受信メールを優先度・カテゴリで分類し返信ドラフトを自動生成', level: 'semi',
+        desc: '「即対応」「確認待ち」「情報共有」「後回しOK」の4段階に分類。即対応・確認待ちには返信ドラフトを自動添付。',
+        prompt: '今日の未読メールを優先度分類して。緊急のものは返信ドラフトも作って',
+        steps: ['メールAPIで未読を取得','優先度・カテゴリを自動分類','返信ドラフト生成（緊急・要対応のみ）','毎朝9時に分類リストを送信'],
+        auto: 70, human: 30 },
+      { name: 'クライアントメモリ・情報一元管理', detail: 'クライアントごとの情報（担当者・NGワード・ブランドトーン・過去経緯）をAIが記憶', level: 'auto',
+        desc: '~/memory/clients/[name].mdに情報を蓄積。以降の全タスクでAIが自動参照し、ブランドに合った出力を維持。',
+        prompt: '[クライアント名]のメモリファイルを更新して。今日の打ち合わせで判明したNGワード:[X]、方針変更:[Y]を追記して',
+        steps: ['メモリファイルの新規作成・更新','打ち合わせ後に随時更新','全タスクで自動参照','情報が増えるほど精度向上'],
+        auto: 80, human: 20 },
+      { name: '業界ニュース・情報収集レポート', detail: 'マーケティング・SNS業界の最新情報を毎週自動収集してサマリー送信', level: 'auto',
+        desc: '指定したメディア・キーワードの新着記事を収集し、「今週の注目ニュース5本」形式でまとめてDiscordに送信。',
+        prompt: '今週のSNSマーケティング関連ニュースをまとめて。特にInstagramとTikTokのアルゴリズム変更情報は必ず入れて',
+        steps: ['毎週月曜にWeb収集','業界・キーワードフィルタリング','要約＋注目度スコアを付与','毎週月曜9時にDiscordへ送信'],
+        auto: 88, human: 12 },
+      { name: 'ファイル整理・命名規則の適用', detail: 'ダウンロードフォルダや作業ファイルを命名規則に従い自動整理', level: 'semi',
+        desc: '~/Downloads/や~/Desktop/を監視し、命名規則（日付_クライアント名_種類）に従って適切なフォルダへ自動移動。',
+        prompt: 'デスクトップのファイルを整理して。クライアント別・種類別（画像・書類・動画）にフォルダ分けして',
+        steps: ['対象フォルダを監視','ファイル名・拡張子から種類を判定','命名規則を自動適用','整理完了レポートを送信'],
+        auto: 68, human: 32 },
+      { name: 'セルフブランディング・自社SNS運用補助', detail: '自分自身のSNSアカウントの投稿アイデア・発信コンテンツを補助', level: 'semi',
+        desc: '自分のポートフォリオ・得意分野・実績をmemoryに登録。定期的に自社発信用のコンテンツアイデアと下書きを生成。',
+        prompt: '私のSNS（Xアカウント）用の今週の投稿案を3本出して。フリーランスSNSマーケターとしての知見・実績を発信する内容で',
+        steps: ['memory/self-profile.mdから実績・専門性を参照','ターゲット層（見込みクライアント）向けに生成','週次で3〜5本のアイデアを提案'],
+        auto: 65, human: 35 },
+    ]
+  },
+];
+
+// Render
+const grid = document.getElementById('grid');
+
+DATA.forEach(section => {
+  const cat = CATS[section.cat];
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.dataset.cat = section.cat;
+
+  const levelCount = { auto: 0, semi: 0, assist: 0 };
+  section.tasks.forEach(t => levelCount[t.level]++);
+
+  card.innerHTML = `
+    <div class="section-header">
+      <div class="section-icon" style="background:${cat.bg}; font-size:16px">${cat.icon}</div>
+      <div>
+        <div class="section-title" style="color:${cat.color}">${section.section}</div>
+        <div class="section-sub">${cat.label}</div>
+      </div>
+      <div class="count-badge">${section.tasks.length}件</div>
+    </div>
+    <div class="task-list">
+      ${section.tasks.map((t, i) => `
+        <div class="task" data-section="${section.section}" data-idx="${i}" data-cat="${section.cat}">
+          <div class="task-dot" style="background:${t.level==='auto'?'var(--teal)':t.level==='semi'?'var(--amber)':'var(--dim)'}"></div>
+          <div class="task-body">
+            <div class="task-name">${t.name}</div>
+            <div class="task-detail">${t.detail}</div>
+          </div>
+          <div class="task-badge ${t.level==='auto'?'badge-auto':t.level==='semi'?'badge-semi':'badge-manual'}">${t.level==='auto'?'全自動':t.level==='semi'?'半自動':'補助'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+// Drawer
+const overlay = document.getElementById('overlay');
+const drawer  = document.getElementById('drawer');
+const drawerContent = document.getElementById('drawerContent');
+const drawerClose = document.getElementById('drawerClose');
+
+function openDrawer(sectionName, idx, catKey) {
+  const sec = DATA.find(s => s.section === sectionName);
+  const task = sec.tasks[idx];
+  const cat = CATS[catKey];
+
+  drawerContent.innerHTML = `
+    <div class="drawer-tag" style="background:${cat.bg};color:${cat.color}">${cat.icon} ${cat.label}</div>
+    <div class="drawer-title">${task.name}</div>
+    <div class="drawer-desc">${task.desc}</div>
+
+    <div class="drawer-section">
+      <h3>自動化レベル</h3>
+      <div style="margin-top:8px">
+        <div class="automation-bar">
+          <div class="automation-bar-label">AI実行</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${task.auto}%;background:var(--teal)"></div></div>
+          <div style="font-size:12px;color:var(--teal);min-width:36px;text-align:right">${task.auto}%</div>
+        </div>
+        <div class="automation-bar" style="margin-top:6px">
+          <div class="automation-bar-label">人間確認</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${task.human}%;background:var(--amber)"></div></div>
+          <div style="font-size:12px;color:var(--amber);min-width:36px;text-align:right">${task.human}%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <h3>OpenClawへの指示例</h3>
+      <div class="prompt-box">${task.prompt}</div>
+    </div>
+
+    <div class="drawer-section">
+      <h3>自動化の流れ</h3>
+      <ol class="step-list">
+        ${task.steps.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+    </div>
+  `;
+
+  overlay.classList.add('open');
+  drawer.classList.add('open');
+}
+
+function closeDrawer() {
+  overlay.classList.remove('open');
+  drawer.classList.remove('open');
+}
+
+document.querySelectorAll('.task').forEach(el => {
+  el.addEventListener('click', () => {
+    openDrawer(el.dataset.section, parseInt(el.dataset.idx), el.dataset.cat);
+  });
+});
+
+overlay.addEventListener('click', closeDrawer);
+drawerClose.addEventListener('click', closeDrawer);
+
+// Filter
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.section-card').forEach(card => {
+      if (cat === 'all' || card.dataset.cat === cat) {
+        card.classList.remove('dimmed');
+      } else {
+        card.classList.add('dimmed');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
